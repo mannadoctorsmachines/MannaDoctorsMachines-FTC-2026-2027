@@ -30,9 +30,9 @@ public class DrivetrainConfig {
     public static final double STRAFE_TICKS_PER_CM = TICKS_PER_CM * STRAFE_CORRECTION;
 
     // PID de giro do robô
-    public static final double TURN_KP = 0.018;
+    public static final double TURN_KP = 0.005;
     public static final double TURN_KI = 0.0;
-    public static final double TURN_KD = 0.0015;
+    public static final double TURN_KD = 0.0001;
     public static final double TURN_MIN_POWER = 0.12;
     public static final double TURN_MAX_POWER = 0.45;
     public static final double TURN_TOLERANCE_DEGREES = 2.0;

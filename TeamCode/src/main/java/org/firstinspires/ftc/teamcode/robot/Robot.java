@@ -9,57 +9,121 @@ import org.firstinspires.ftc.teamcode.localization.LocalizationConfig;
 import org.firstinspires.ftc.teamcode.subsystems.drivetrain.Drivetrain;
 import org.firstinspires.ftc.teamcode.subsystems.intake.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.shooter.Shooter;
+import org.firstinspires.ftc.teamcode.subsystems.shooter.ShooterTwoMotors;
 import org.firstinspires.ftc.teamcode.vision.Vision;
 import org.firstinspires.ftc.teamcode.vision.apriltag.AprilTagCamera;
 import org.firstinspires.ftc.teamcode.vision.limelight.Limelight;
 
 /**
- * Ponto de composição do robô: cria, inicializa, atualiza e para os
- * componentes.
+ * Ponto central de composição do robô.
  *
- * O Robot NÃO controla motores, NÃO contém PID, NÃO contém lógica de
- * Shooter/Intake, NÃO calcula pose, NÃO processa AprilTags e NÃO conhece
- * estratégia nem regras da temporada.
+ * O Robot é responsável por:
+ * - criar os subsistemas universais;
+ * - inicializar os subsistemas;
+ * - atualizar os componentes que precisam de update();
+ * - fornecer acesso aos subsistemas;
+ * - executar a parada geral do robô.
  *
- * Componentes opcionais respeitam as flags de {@link RConstants}: quando
- * desligados não são criados e o getter devolve null.
+ * O Robot NÃO contém:
+ * - lógica de estratégia;
+ * - lógica específica da temporada;
+ * - controle direto de motores;
+ * - PID;
+ * - cálculos de pose;
+ * - processamento de AprilTag;
+ * - comandos específicos de jogo.
  *
- * ORDEM DE INICIALIZAÇÃO (init): Drivetrain -> Localization -> Shooter ->
- * Intake. A Vision é iniciada à parte (initVision), porque nem todo OpMode a
- * usa. A fonte de visão vem de {@link RobotConfig#VISION_PROVIDER}.
+ * Arquitetura:
  *
- * CICLO DE ATUALIZAÇÃO: o OpMode chama robot.update() uma vez por ciclo.
- * Ele atualiza Localization, Vision e Intake (temporizador do pushOne), nessa
- * ordem. Novos OpModes não precisam saber quais componentes têm update().
- * Em LinearOpMode, chame robot.update() dentro dos laços de espera.
+ *     OpMode
+ *        ↓
+ *      Robot
+ *        ↓
+ *   Subsystems
+ *        ↓
+ *    Hardware
  */
 public class Robot {
 
     private final Drivetrain drivetrain;
+
+    /*
+     * Apenas UMA implementação do Shooter é criada.
+     *
+     * Shooter:
+     * implementação antiga / 1 motor
+     *
+     * ShooterTwoMotors:
+     * implementação atual / 2 motores
+     */
     private final Shooter shooter;
+    private final ShooterTwoMotors shooterTwoMotors;
+
     private final Intake intake;
     private final Localizer localization;
+
     private Vision vision;
 
     private boolean initialized = false;
 
     public Robot() {
+
         drivetrain = new Drivetrain();
-        shooter = RConstants.USE_SHOOTER ? new Shooter() : null;
+        /*
+         * O Robot escolhe qual implementação do Shooter
+         * será utilizada.
+         *
+         * As duas classes continuam existindo no projeto,
+         * mas nunca são inicializadas simultaneamente.
+         */
+        if (RConstants.USE_SHOOTER) {
+            if (RConstants.USE_TWO_MOTOR_SHOOTER) {
+                shooter = null;
+                shooterTwoMotors = new ShooterTwoMotors();
+
+            } else {
+                shooter = new Shooter();
+                shooterTwoMotors = null;
+            }
+
+        } else {
+
+            shooter = null;
+            shooterTwoMotors = null;
+        }
+
         intake = RConstants.USE_FEEDER ? new Intake() : null;
         localization = RConstants.USE_LOCALIZATION ? new GobildaOdometry() : null;
     }
 
-    /** Inicializa drivetrain, localization, shooter e intake (conforme flags). */
+    /**
+     * Inicializa os componentes universais do robô.
+     *
+     * Ordem:
+     *
+     * Drivetrain
+     * Localization
+     * Shooter
+     * Intake
+     */
     public void init(HardwareMap hardwareMap) {
+
         drivetrain.init(hardwareMap);
 
         if (localization != null) {
             localization.init(hardwareMap);
         }
 
+        /*
+         * Apenas o Shooter selecionado pelo RConstants
+         * será inicializado.
+         */
         if (shooter != null) {
             shooter.init(hardwareMap);
+        }
+
+        if (shooterTwoMotors != null) {
+            shooterTwoMotors.init(hardwareMap);
         }
 
         if (intake != null) {
@@ -69,16 +133,24 @@ public class Robot {
         initialized = true;
     }
 
-    /** Cria e inicializa a Vision escolhida em RobotConfig, se USE_CAMERA. */
+    /**
+     * Inicializa o sistema de visão escolhido em RobotConfig.
+     *
+     * A Vision é inicializada separadamente porque nem todo
+     * OpMode precisa utilizar câmera.
+     */
     public void initVision(HardwareMap hardwareMap) {
+
         if (!RConstants.USE_CAMERA) {
             return;
         }
 
         switch (RobotConfig.VISION_PROVIDER) {
+
             case LIMELIGHT:
                 vision = new Limelight();
                 break;
+
             case APRILTAG_CAMERA:
             default:
                 vision = new AprilTagCamera();
@@ -88,57 +160,106 @@ public class Robot {
         vision.init(hardwareMap);
     }
 
-    /** Atualiza os componentes que dependem de ciclo. Uma vez por ciclo. */
+    /**
+     * Atualiza os componentes que precisam de atualização periódica.
+     *
+     * O OpMode deve chamar este método uma vez por ciclo.
+     */
     public void update() {
+
         if (!initialized) {
             return;
         }
 
+        /*
+         * Localização primeiro.
+         */
         if (localization != null) {
             localization.update();
         }
 
+        /*
+         * Depois visão.
+         *
+         * Caso configurado, a visão pode fornecer uma correção
+         * para o sistema de localização.
+         */
         if (vision != null) {
+
             vision.update();
 
-            // Fronteira Vision -> Localization. Só age se a correção estiver
-            // habilitada em LocalizationConfig (desligada por padrão).
             if (localization != null && LocalizationConfig.ACCEPT_VISION_CORRECTIONS) {
                 localization.correctPose(vision.getPoseObservation());
             }
         }
 
+        /*
+         * Intake possui atualização periódica.
+         */
         if (intake != null) {
             intake.update();
         }
     }
 
+    /**
+     * Retorna o drivetrain universal.
+     */
     public Drivetrain getDrivetrain() {
         return drivetrain;
     }
 
-    /** Null se USE_SHOOTER for false. */
+    /**
+     * Retorna o Shooter antigo.
+     *
+     * Será null quando USE_TWO_MOTOR_SHOOTER = true.
+     */
     public Shooter getShooter() {
         return shooter;
     }
 
-    /** Null se USE_FEEDER for false. */
+    /**
+     * Retorna o ShooterTwoMotors.
+     *
+     * Será null quando USE_TWO_MOTOR_SHOOTER = false.
+     */
+    public ShooterTwoMotors getTwoShooter() {
+        return shooterTwoMotors;
+    }
+
+    /**
+     * Retorna o Intake.
+     *
+     * Será null quando USE_FEEDER = false.
+     */
     public Intake getIntake() {
         return intake;
     }
 
-    /** Null se USE_LOCALIZATION for false. */
+    /**
+     * Retorna o sistema de localização.
+     *
+     * Será null quando USE_LOCALIZATION = false.
+     */
     public Localizer getLocalization() {
         return localization;
     }
 
-    /** Null se USE_CAMERA for false ou se initVision() ainda não foi chamado. */
+    /**
+     * Retorna a Vision.
+     *
+     * Será null quando:
+     * - USE_CAMERA = false;
+     * - initVision() ainda não foi chamado.
+     */
     public Vision getVision() {
         return vision;
     }
 
-    /** Para drivetrain, intake e shooter. Seguro para chamar antes do init(). */
+    /**
+     * Para todos os subsistemas ativos.
+     */
     public void stopAll() {
+
         if (!initialized) {
             return;
         }
@@ -152,10 +273,17 @@ public class Robot {
         if (shooter != null) {
             shooter.stop();
         }
+
+        if (shooterTwoMotors != null) {
+            shooterTwoMotors.stop();
+        }
     }
 
-    /** Libera a Vision. Seguro para chamar mais de uma vez. */
+    /**
+     * Fecha/libera a Vision.
+     */
     public void closeVision() {
+
         if (vision != null) {
             vision.close();
         }

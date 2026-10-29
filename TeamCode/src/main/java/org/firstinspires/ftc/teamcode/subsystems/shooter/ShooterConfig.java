@@ -21,7 +21,7 @@ public class ShooterConfig {
 
     // Shooter operating limits
     public static final double MIN_SHOOTER_RPM = 1000.0;
-    public static final double MAX_SHOOTER_RPM = 6000.0;
+    public static final double MAX_SHOOTER_RPM = 6;
     public static final double SHOOTER_READY_TOLERANCE_RPM = 0;
 
     // =====================================================================

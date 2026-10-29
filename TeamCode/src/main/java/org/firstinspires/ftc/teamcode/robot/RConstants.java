@@ -16,6 +16,16 @@ public class RConstants {
     // inicializado, e o getter correspondente devolve null.
     public static final boolean USE_CAMERA = false;
     public static final boolean USE_SHOOTER = true;
+    /*
+     * Define qual implementação do Shooter está ativa.
+     *
+     * true  = ShooterTwoMotors
+     * false = Shooter antigo (1 motor)
+     *
+     * As duas classes continuam existindo.
+     * Apenas uma é criada/inicializada pelo Robot.
+     */
+    public static final boolean USE_TWO_MOTOR_SHOOTER = true;
     public static final boolean USE_FEEDER = true;
     public static final boolean USE_LOCALIZATION = false;
 
@@ -56,4 +66,5 @@ public class RConstants {
 
     // Tempo máximo (ms) que o autônomo espera o robô girar em direção ao alvo
     public static final long AIM_TURN_TIMEOUT_MS = 1500;
+
 }
