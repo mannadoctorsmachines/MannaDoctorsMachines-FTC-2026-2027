@@ -16,8 +16,8 @@ public class GobildaOdometryConfig {
 
     // Offsets dos pods em relação ao centro de rotação, em cm
     // (valores originais da GobildaOdometry; não validados fisicamente).
-    public static final double X_POD_OFFSET_CM = -18.0;
-    public static final double Y_POD_OFFSET_CM = -10.0;
+    public static final double X_POD_OFFSET_CM = -14.45;
+    public static final double Y_POD_OFFSET_CM = -12.8;
 
     public static final GoBildaPinpointDriver.GoBildaOdometryPods POD_TYPE =
             GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD;

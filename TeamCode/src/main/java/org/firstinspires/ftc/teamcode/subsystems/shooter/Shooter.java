@@ -15,9 +15,7 @@ public class Shooter {
     private double targetRPM = 0.0;
 
     public void init(HardwareMap hardwareMap) {
-        shooterMotorLeft = hardwareMap.get(
-                DcMotorEx.class,
-                ShooterConfig.SHOOTER_LEFT
+        shooterMotorLeft = hardwareMap.get(DcMotorEx.class, ShooterConfig.SHOOTER_LEFT
         );
 
 

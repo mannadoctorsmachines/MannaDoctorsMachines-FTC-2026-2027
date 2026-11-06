@@ -2,6 +2,8 @@ package org.firstinspires.ftc.teamcode.robot;
 
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
+import org.firstinspires.ftc.teamcode.safety.MotorSafetyManager;
+
 import org.firstinspires.ftc.teamcode.config.RobotConfig;
 import org.firstinspires.ftc.teamcode.localization.GobildaOdometry;
 import org.firstinspires.ftc.teamcode.localization.Localizer;
@@ -56,18 +58,19 @@ public class Robot {
      * ShooterTwoMotors:
      * implementação atual / 2 motores
      */
-    private final Shooter shooter;
+    //private final Shooter shooter;
     private final ShooterTwoMotors shooterTwoMotors;
 
     private final Intake intake;
     private final Localizer localization;
 
     private Vision vision;
+    private final MotorSafetyManager motorSafety;
 
     private boolean initialized = false;
 
     public Robot() {
-
+        motorSafety = new MotorSafetyManager();
         drivetrain = new Drivetrain();
         /*
          * O Robot escolhe qual implementação do Shooter
@@ -78,17 +81,17 @@ public class Robot {
          */
         if (RConstants.USE_SHOOTER) {
             if (RConstants.USE_TWO_MOTOR_SHOOTER) {
-                shooter = null;
+                //shooter = null;
                 shooterTwoMotors = new ShooterTwoMotors();
 
             } else {
-                shooter = new Shooter();
+                //shooter = new Shooter();
                 shooterTwoMotors = null;
             }
 
         } else {
 
-            shooter = null;
+            //shooter = null;
             shooterTwoMotors = null;
         }
 
@@ -118,9 +121,9 @@ public class Robot {
          * Apenas o Shooter selecionado pelo RConstants
          * será inicializado.
          */
-        if (shooter != null) {
-            shooter.init(hardwareMap);
-        }
+//        if (shooter != null) {
+//            shooter.init(hardwareMap);
+//        }
 
         if (shooterTwoMotors != null) {
             shooterTwoMotors.init(hardwareMap);
@@ -213,9 +216,9 @@ public class Robot {
      *
      * Será null quando USE_TWO_MOTOR_SHOOTER = true.
      */
-    public Shooter getShooter() {
-        return shooter;
-    }
+//    public Shooter getShooter() {
+//        return shooter;
+//    }
 
     /**
      * Retorna o ShooterTwoMotors.
@@ -268,10 +271,6 @@ public class Robot {
 
         if (intake != null) {
             intake.stop();
-        }
-
-        if (shooter != null) {
-            shooter.stop();
         }
 
         if (shooterTwoMotors != null) {

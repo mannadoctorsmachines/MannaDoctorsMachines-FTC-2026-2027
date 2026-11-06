@@ -63,7 +63,7 @@ public class CalibrarDistanciaRPM extends OpMode {
         robot.initVision(hardwareMap);
 
         vision = robot.getVision();
-        shooter = robot.getShooter();
+        //shooter = robot.getShooter();
         intake = robot.getIntake();
 
         telemetry.addLine("Calibração pronta. O drive não será acionado.");

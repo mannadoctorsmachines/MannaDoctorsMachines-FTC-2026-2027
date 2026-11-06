@@ -19,12 +19,12 @@ public class BallRetainerConfig {
 
     // PENDENTE: posições do servo (0.0 a 1.0) medidas no robô.
     // Servo posicional
-    public static final double BLOCK_POSITION = 1.0; //Double.NaN;
-    public static final double RELEASE_POSITION = 0.0; //Double.NaN;
+    public static final double BLOCK_POSITION = 0.0; //Double.NaN;
+    public static final double RELEASE_POSITION = 1.0; //Double.NaN;
 
     // Servo continuo
     public static final double BLOCK_POWER = 0.0; //Double.NaN;
     public static final double RELEASE_POWER = 0; //Double.NaN;
     // tempo do movimento do servo contínuo
-    public static final long MOVEMENT_TIME_MS = 300; //Double.NaN;
+    public static final long MOVEMENT_TIME_MS = 50; //Double.NaN;
 }

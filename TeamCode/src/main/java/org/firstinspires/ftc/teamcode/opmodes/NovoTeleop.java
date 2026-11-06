@@ -48,7 +48,7 @@ public class NovoTeleop extends OpMode {
 
         drive = robot.getDrivetrain();
         vision = robot.getVision();
-        shooter = robot.getShooter();
+        //shooter = robot.getShooter();
         feeder = robot.getIntake();
 
         // Removido: odo.init(hardwareMap). O campo "odo" nunca era instanciado

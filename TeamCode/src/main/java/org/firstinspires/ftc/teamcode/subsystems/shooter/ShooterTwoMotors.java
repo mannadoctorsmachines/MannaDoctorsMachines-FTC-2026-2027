@@ -20,7 +20,8 @@ public class ShooterTwoMotors {
     private DcMotorEx shooterMotorLeft;
     private DcMotorEx shooterMotorRight;
     private boolean hasRightMotor = false;
-    private double targetRPM = 0.0;
+    private double leftTargetRPM = 0.0;
+    private double rightTargetRPM = 0.0;
 
     public void init(HardwareMap hardwareMap) {
 
@@ -44,20 +45,13 @@ public class ShooterTwoMotors {
             hasRightMotor = true;
         }
 
-        /*
-         * Ajustar conforme a montagem física.
-         *
-         * Atualmente:
-         * esquerdo = REVERSE
-         * direito = FORWARD
-         */
         shooterMotorLeft.setDirection(DcMotorSimple.Direction.REVERSE);
 
         configureMotor(shooterMotorLeft);
 
         if (shooterMotorRight != null) {
 
-            shooterMotorRight.setDirection(DcMotorSimple.Direction.FORWARD);
+            shooterMotorRight.setDirection(DcMotorSimple.Direction.REVERSE);
             configureMotor(shooterMotorRight);
         }
     }
@@ -84,7 +78,17 @@ public class ShooterTwoMotors {
         configureMotor(shooterMotorRight);
     }
 
+    /**
+     * Define um RPM-base mantendo a proporção de teste entre os motores:
+     * esquerdo = 100%; direito = 90%.
+     * Usado pelos modos manual e pelos cálculos de distância do autónomo.
+     */
     public void setRPM(double rpm) {
+        setRPM(rpm, rpm * ShooterConfig.RIGHT_SHOOTER_RPM_RATIO);
+    }
+
+    /** Define alvos independentes para cada motor (RPM do rolo). */
+    public void setRPM(double leftRPM, double rightRPM) {
 
         if (!hasValidEncoderConversion() || !hasNominalMotorRPMConfigured()) {
             stop();
@@ -92,24 +96,51 @@ public class ShooterTwoMotors {
         }
 
         double maximumAllowedRPM = getMaximumAllowedRollerRPM();
-
         double minimumAllowedRPM = Math.min(ShooterConfig.MIN_SHOOTER_RPM, maximumAllowedRPM);
 
-        targetRPM = MathU.clamp(rpm, minimumAllowedRPM, maximumAllowedRPM);
+        leftTargetRPM = MathU.clamp(leftRPM, minimumAllowedRPM, maximumAllowedRPM);
+        rightTargetRPM = shooterMotorRight == null
+                ? 0.0
+                : MathU.clamp(rightRPM, minimumAllowedRPM, maximumAllowedRPM);
 
-        double ticksPerSecond = rpmToTicksPerSecond(targetRPM);
+        shooterMotorLeft.setVelocity(rpmToTicksPerSecond(leftTargetRPM));
 
-        /*
-         * Sempre controla o motor esquerdo.
-         */
-        shooterMotorLeft.setVelocity(ticksPerSecond);
-
-        /*
-         * Se houver segundo motor,
-         * aplica a mesma velocidade nele.
-         */
         if (shooterMotorRight != null) {
-            shooterMotorRight.setVelocity(ticksPerSecond);
+            shooterMotorRight.setVelocity(rpmToTicksPerSecond(rightTargetRPM));
+        }
+    }
+
+    public void setReverseRPM(double rpm) {
+
+        if (!hasValidEncoderConversion() || !hasNominalMotorRPMConfigured()) {
+            stop();
+            return;
+        }
+
+        double maximumAllowedRPM = getMaximumAllowedRollerRPM();
+        double minimumAllowedRPM =
+                Math.min(ShooterConfig.MIN_SHOOTER_RPM, maximumAllowedRPM);
+
+        double reverseRPM = MathU.clamp(
+                Math.abs(rpm),
+                minimumAllowedRPM,
+                maximumAllowedRPM
+        );
+
+        leftTargetRPM = reverseRPM;
+
+        rightTargetRPM = shooterMotorRight == null
+                ? 0.0
+                : reverseRPM;
+
+        shooterMotorLeft.setVelocity(
+                -rpmToTicksPerSecond(reverseRPM)
+        );
+
+        if (shooterMotorRight != null) {
+            shooterMotorRight.setVelocity(
+                    -rpmToTicksPerSecond(reverseRPM)
+            );
         }
     }
 
@@ -117,7 +148,8 @@ public class ShooterTwoMotors {
 
         double safePower = MathU.clamp(power, RConstants.MIN_MOTOR_POWER, RConstants.MAX_MOTOR_POWER);
 
-        targetRPM = 0.0;
+        leftTargetRPM = 0.0;
+        rightTargetRPM = 0.0;
 
         shooterMotorLeft.setPower(safePower);
 
@@ -128,7 +160,8 @@ public class ShooterTwoMotors {
 
     public void stop() {
 
-        targetRPM = 0.0;
+        leftTargetRPM = 0.0;
+        rightTargetRPM = 0.0;
 
         stopMotor(shooterMotorLeft);
         stopMotor(shooterMotorRight);
@@ -142,7 +175,7 @@ public class ShooterTwoMotors {
     }
 
     public double getTargetRPM() {
-        return targetRPM;
+        return leftTargetRPM;
     }
 
     public double getLeftRPM() {
@@ -275,11 +308,11 @@ public class ShooterTwoMotors {
      */
     public boolean isAtTargetRPM() {
 
-        if (targetRPM <= 0.0) {
+        if (leftTargetRPM <= 0.0) {
             return false;
         }
 
-        double leftError = Math.abs(getLeftRPM() - targetRPM);
+        double leftError = Math.abs(getLeftRPM() - leftTargetRPM);
 
         boolean leftReady = leftError <= ShooterConfig.SHOOTER_READY_TOLERANCE_RPM;
         /*
@@ -290,7 +323,7 @@ public class ShooterTwoMotors {
             return leftReady;
         }
 
-        double rightError = Math.abs(getRightRPM() - targetRPM);
+        double rightError = Math.abs(getRightRPM() - rightTargetRPM);
 
         boolean rightReady = rightError <= ShooterConfig.SHOOTER_READY_TOLERANCE_RPM;
 
@@ -353,4 +386,19 @@ public class ShooterTwoMotors {
                 && ShooterConfig.SHOOTER_TICKS_PER_ROLLER_REV
                 > 0.0;
     }
+
+    /**
+     * RPM-alvo do motor esquerdo.
+     */
+    public double getLeftTargetRPM() {
+        return leftTargetRPM;
+    }
+
+    /**
+     * RPM-alvo do motor direito.
+     */
+    public double getRightTargetRPM() {
+        return rightTargetRPM;
+    }
+
 }

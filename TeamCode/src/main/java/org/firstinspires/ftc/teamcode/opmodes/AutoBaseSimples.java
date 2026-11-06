@@ -35,7 +35,7 @@ public abstract class AutoBaseSimples extends LinearOpMode {
         robot.init(hardwareMap);
 
         drive = robot.getDrivetrain();
-        shooter = robot.getShooter();
+        //shooter = robot.getShooter();
         intake = robot.getIntake();
 
         shooterTable = new ShooterLista();
