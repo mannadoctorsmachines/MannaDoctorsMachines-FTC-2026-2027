@@ -11,7 +11,7 @@ import org.firstinspires.ftc.teamcode.robot.Robot;
 import org.firstinspires.ftc.teamcode.subsystems.drivetrain.DrivetrainConfig;
 import org.firstinspires.ftc.teamcode.subsystems.drivetrain.Drivetrain;
 import org.firstinspires.ftc.teamcode.subsystems.intake.Intake;
-import org.firstinspires.ftc.teamcode.subsystems.shooter.Shooter;
+import org.firstinspires.ftc.teamcode.subsystems.shooter.ShooterTwoMotors;
 import org.firstinspires.ftc.teamcode.util.CalcDistAlvo;
 import org.firstinspires.ftc.teamcode.util.MathU;
 import org.firstinspires.ftc.teamcode.util.ShooterLista;
@@ -23,7 +23,7 @@ public class NovoTeleop extends OpMode {
     private Robot robot;
     private Drivetrain drive;
     private Vision vision;
-    private Shooter shooter;
+    private ShooterTwoMotors shooter;
     private Intake feeder;
 
     private CalcDistAlvo distanceCalculator;
@@ -48,7 +48,7 @@ public class NovoTeleop extends OpMode {
 
         drive = robot.getDrivetrain();
         vision = robot.getVision();
-        //shooter = robot.getShooter();
+        shooter = robot.getTwoShooter();
         feeder = robot.getIntake();
 
         // Removido: odo.init(hardwareMap). O campo "odo" nunca era instanciado
@@ -271,7 +271,9 @@ public class NovoTeleop extends OpMode {
             telemetry.addLine("----- SHOOTER -----");
             telemetry.addData("Distance cm", lastShooterDistanceCm);
             telemetry.addData("Target RPM", lastTargetRPM);
-            telemetry.addData("Current RPM", shooter.getCurrentRPM());
+            telemetry.addData("Parallel RPM médio", shooter.getCurrentRPM());
+            telemetry.addData("Outtake RPM", shooter.getOuttakeRPM());
+            telemetry.addData("Outtake RPM alvo", shooter.getTargetOuttakeRPM());
             telemetry.addData("Shooter ready", shooter.isAtTargetRPM());
         }
 

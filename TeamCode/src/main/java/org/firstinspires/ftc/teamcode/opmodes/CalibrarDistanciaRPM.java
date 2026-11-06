@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.teamcode.robot.RConstants;
 import org.firstinspires.ftc.teamcode.robot.Robot;
 import org.firstinspires.ftc.teamcode.subsystems.intake.Intake;
-import org.firstinspires.ftc.teamcode.subsystems.shooter.Shooter;
+import org.firstinspires.ftc.teamcode.subsystems.shooter.ShooterTwoMotors;
 import org.firstinspires.ftc.teamcode.util.CalcDistAlvo;
 import org.firstinspires.ftc.teamcode.util.MathU;
 import org.firstinspires.ftc.teamcode.util.ShooterLista;
@@ -23,7 +23,7 @@ public class CalibrarDistanciaRPM extends OpMode {
 
     private Robot robot;
     private Vision vision;
-    private Shooter shooter;
+    private ShooterTwoMotors shooter;
     private Intake intake;
     private CalcDistAlvo distanceCalculator;
     private ShooterLista shooterTable;
@@ -63,7 +63,7 @@ public class CalibrarDistanciaRPM extends OpMode {
         robot.initVision(hardwareMap);
 
         vision = robot.getVision();
-        //shooter = robot.getShooter();
+        shooter = robot.getTwoShooter();
         intake = robot.getIntake();
 
         telemetry.addLine("Calibração pronta. O drive não será acionado.");
@@ -229,10 +229,10 @@ public class CalibrarDistanciaRPM extends OpMode {
                 boolean started = intake.pushOne();
                 statusMessage = started
                         ? String.format(
-                                "Teste: %.1f cm e %.0f RPM.",
-                                filteredShooterDistanceCm,
-                                shooter.getTargetRPM()
-                        )
+                        "Teste: %.1f cm e %.0f RPM.",
+                        filteredShooterDistanceCm,
+                        shooter.getTargetRPM()
+                )
                         : "Intake ocupado; bola nao alimentada.";
             }
         }

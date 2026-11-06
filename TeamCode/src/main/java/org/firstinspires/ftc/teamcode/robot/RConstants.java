@@ -19,7 +19,7 @@ public class RConstants {
     /*
      * Define qual implementação do Shooter está ativa.
      *
-     * true  = ShooterTwoMotors
+     * true  = ShooterTwoMotors (3 motores)
      * false = Shooter antigo (1 motor)
      *
      * As duas classes continuam existindo.

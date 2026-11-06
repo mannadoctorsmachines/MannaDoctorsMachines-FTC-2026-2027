@@ -30,14 +30,14 @@ public class TeleopShooterTwoMotorsTest extends OpMode {
         shooter = robot.getTwoShooter();
         intake = robot.getIntake();
 
-        telemetry.addLine("TESTE SHOOTER - 2 MOTORES");
+        telemetry.addLine("TESTE SHOOTER - 3 MOTORES");
         telemetry.addLine("");
         telemetry.addLine("Gamepad 1:");
         telemetry.addLine("  Drive = mecanum");
         telemetry.addLine("");
         telemetry.addLine("Gamepad 2:");
-        telemetry.addLine("  LB = Shooter 6000 RPM");
-        telemetry.addLine("  LT = Shooter 4000 RPM");
+        telemetry.addLine("  LB = Par 6000 RPM + outtake configurado");
+        telemetry.addLine("  LT = Par 4000 RPM + outtake configurado");
         telemetry.addLine("  RB = Intake");
         telemetry.addLine("  RT = Intake reverso");
         telemetry.addLine("  B = Shooter OFF");
@@ -121,14 +121,14 @@ public class TeleopShooterTwoMotorsTest extends OpMode {
         }
 
         if (gamepad2.left_bumper) {
-            shooter.setRPM(ShooterConfig.MANUAL_SHOOTER_RPM);
+            shooter.setRPM(ShooterConfig.MANUAL_SHOOTER_RPM, ShooterConfig.DEFAULT_OUTTAKE_RPM);
             return;
         }
 
         if (gamepad2.left_trigger
                 > RConstants.GAMEPAD_TRIGGER_THRESHOLD) {
 
-            shooter.setRPM(4000.0);
+            shooter.setRPM(4000.0, ShooterConfig.DEFAULT_OUTTAKE_RPM);
             return;
         }
 
@@ -159,7 +159,7 @@ public class TeleopShooterTwoMotorsTest extends OpMode {
     }
 
     private void sendTelemetry() {
-        telemetry.addLine("===== SHOOTER 2 MOTORES =====");
+        telemetry.addLine("===== SHOOTER 3 MOTORES =====");
 
         if (shooter == null) {
             telemetry.addLine("ShooterTwoMotors = NULL");
@@ -180,8 +180,33 @@ public class TeleopShooterTwoMotorsTest extends OpMode {
             );
 
             telemetry.addData(
-                    "RPM médio",
+                    "RPM médio paralelo",
                     shooter.getCurrentRPM()
+            );
+
+            telemetry.addData(
+                    "RPM outtake",
+                    shooter.getOuttakeRPM()
+            );
+
+            telemetry.addData(
+                    "RPM alvo outtake",
+                    shooter.getTargetOuttakeRPM()
+            );
+
+            telemetry.addData(
+                    "RPM motor outtake",
+                    shooter.getOuttakeMotorRPM()
+            );
+
+            telemetry.addData(
+                    "Outtake ticks/s",
+                    shooter.getOuttakeTicksPerSecond()
+            );
+
+            telemetry.addData(
+                    "Encoder outtake",
+                    shooter.getOuttakeEncoderPosition()
             );
 
             telemetry.addData(
@@ -222,8 +247,8 @@ public class TeleopShooterTwoMotorsTest extends OpMode {
 
         telemetry.addLine("");
         telemetry.addLine("===== CONTROLES =====");
-        telemetry.addData("LB", "6000 RPM");
-        telemetry.addData("LT", "4000 RPM");
+        telemetry.addData("LB", "Par 6000 RPM / outtake padrão");
+        telemetry.addData("LT", "Par 4000 RPM / outtake padrão");
         telemetry.addData("B", "Shooter OFF");
         telemetry.addData("X", "PARADA GERAL");
 

@@ -25,7 +25,6 @@ public class TeleopTest2 extends OpMode {
     private enum ShooterMode {
         OFF,
         MANUAL,
-        REVERSE,
         AUTO
     }
 
@@ -110,7 +109,6 @@ public class TeleopTest2 extends OpMode {
         telemetry.addLine("DECODE TeleOp pronto.");
         telemetry.addLine("gamepad2 LB: shooter manual");
         telemetry.addLine("gamepad2 LT: autoshooter pela câmera");
-        telemetry.addLine("gamepad2 Y: shooter reverso");
         telemetry.addLine("gamepad2 RB: intake para frente");
         telemetry.addLine("gamepad2 RT: intake reverso/destravar");
         telemetry.addLine("gamepad2 X: parada dos mecanismos/alinhamento");
@@ -268,9 +266,9 @@ public class TeleopTest2 extends OpMode {
          */
 
         boolean emergencyStop = gamepad2.x;
-        boolean reverseShooterRequested = gamepad2.y;
         boolean manualShooterRequested = gamepad2.left_bumper;
-        boolean autoShooterRequested = gamepad2.left_trigger > RConstants.GAMEPAD_TRIGGER_THRESHOLD;
+        boolean autoShooterRequested =
+                gamepad2.left_trigger > RConstants.GAMEPAD_TRIGGER_THRESHOLD;
 
         boolean forwardIntakeRequested = gamepad2.right_bumper;
         boolean reverseIntakeRequested = gamepad2.right_trigger > RConstants.GAMEPAD_TRIGGER_THRESHOLD;
@@ -305,6 +303,7 @@ public class TeleopTest2 extends OpMode {
         autoShooterWaitingForCamera = autoShooterRequested && !hasAutoSolution;
 
         ShooterMode requestedShooterMode = ShooterMode.OFF;
+
         /*
          * O AUTO tem prioridade quando LT e LB
          * forem pressionados juntos.
@@ -312,11 +311,7 @@ public class TeleopTest2 extends OpMode {
          * Se LT estiver sem alvo, LB ainda pode
          * assumir o modo manual.
          */
-
-        if (reverseShooterRequested){
-
-            requestedShooterMode = ShooterMode.REVERSE;
-        } else if (autoShooterRequested) {
+        if (autoShooterRequested) {
 
             requestedShooterMode = ShooterMode.AUTO;
 
@@ -417,6 +412,7 @@ public class TeleopTest2 extends OpMode {
 
             return;
         }
+
         /*
          * Reinicia o relógio sempre que o modo muda.
          */
@@ -436,20 +432,12 @@ public class TeleopTest2 extends OpMode {
         }
 
         if (shooterMode == ShooterMode.MANUAL) {
+
             activeTargetRPM = ShooterConfig.MANUAL_SHOOTER_RPM;
 
-            shooterTwoMotors.setRPM(
-                    ShooterConfig.MANUAL_LEFT_SHOOTER_RPM,
-                    ShooterConfig.MANUAL_RIGHT_SHOOTER_RPM
-            );
-            shooterTwoMotors.setRawPower(1.0);
+            shooterTwoMotors.setRPM(activeTargetRPM);
 
-        } else if(shooterMode == ShooterMode.REVERSE){
-            activeTargetRPM = ShooterConfig.REVERSE_SHOOTER_RPM;
-
-            shooterTwoMotors.setReverseRPM(ShooterConfig.REVERSE_SHOOTER_RPM);
-
-        }else if (shooterMode == ShooterMode.AUTO) {
+        } else if (shooterMode == ShooterMode.AUTO) {
 
             if (hasFreshCameraShooterSolution()) {
                 activeTargetRPM = lastTargetRPM;
@@ -533,15 +521,8 @@ public class TeleopTest2 extends OpMode {
             telemetry.addData("Ticks/s direito", shooterTwoMotors.getRightTicksPerSecond());
             telemetry.addData("Encoder esquerdo", shooterTwoMotors.getLeftEncoderPosition());
             telemetry.addData("Encoder direito", shooterTwoMotors.getRightEncoderPosition());
-            telemetry.addData("RPM alvo esquerdo", shooterTwoMotors.getLeftTargetRPM());
-            telemetry.addData("RPM alvo direito", shooterTwoMotors.getRightTargetRPM());
+            telemetry.addData("RPM alvo", shooterTwoMotors.getTargetRPM());
             telemetry.addData("Shooter pronto", shooterTwoMotors.isAtTargetRPM());
-            telemetry.addData("Y shooter reverso", gamepad2.y);
-            telemetry.addData(
-                    "Shooter no RPM alvo", shooterTwoMotors != null
-                            && shooterMode != ShooterMode.REVERSE
-                            && shooterTwoMotors.isAtTargetRPM()
-            );
 
         } else {
 

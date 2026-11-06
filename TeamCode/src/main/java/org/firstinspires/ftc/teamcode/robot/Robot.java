@@ -56,7 +56,7 @@ public class Robot {
      * implementação antiga / 1 motor
      *
      * ShooterTwoMotors:
-     * implementação atual / 2 motores
+     * implementação atual / 3 motores
      */
     //private final Shooter shooter;
     private final ShooterTwoMotors shooterTwoMotors;
@@ -221,7 +221,7 @@ public class Robot {
 //    }
 
     /**
-     * Retorna o ShooterTwoMotors.
+     * Retorna o ShooterTwoMotors (paralelo + outtake).
      *
      * Será null quando USE_TWO_MOTOR_SHOOTER = false.
      */
@@ -272,6 +272,10 @@ public class Robot {
         if (intake != null) {
             intake.stop();
         }
+
+//        if (shooter != null) {
+//            shooter.stop();
+//        }
 
         if (shooterTwoMotors != null) {
             shooterTwoMotors.stop();
